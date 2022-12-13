@@ -1,5 +1,4 @@
-﻿//https://cafe.naver.com/easywin32/92
-#include "pch.h"
+﻿#include "pch.h"
 #include "tipsware.h"
 
 // 마우스 왼쪽 버튼이 눌러졌을 때 호출되는 함수를 정의한다!
@@ -14,12 +13,28 @@ void OnLButtonDown(int a_mixed_key, POINT a_pos)
 
     // 따라서 x는 0 ~ 5사이의 값을 가져야 유효한 값이고 y는 0만 유효한 값이 됩니다.
     if (x < 6 && y < 1) {
-        // 6개의 사각형을 모두 어두운 파란색으로 출력합니다.
+        char* p_data = (char*)GetAppData(); // 프로그램의 내부 데이터 주소를 가져온다.
+
+
+
+        // 선택한 사각형의 상태를 0이면 1, 1이면 0으로 변경한다.
+        p_data[x] = !p_data[x]; // *(p_data + x) = !*(p_data + x);
+        // 사각형의 테두리 색상이 0일때와 1일때 달라지기 때문에 색상을 테이블로 만든다.
+        COLORREF border_color[2] = { RGB(0, 100, 200), RGB(0, 200, 255) };
+        // 사각형의 채우기 색상이 0일때와 1일때 달라지기 때문에 색상을 테이블로 만든다.
+        COLORREF fill_color[2] = { RGB(0, 0, 128), RGB(0, 0, 255) };
+        // p_data[i]의 값이 0이면 어두운 색상의 테두리와 채우기 색상으로 사각형을 그리고
+        // 1이면 밝은 색상의 테두리와 채우기 색상으로 6개의 사각형을 그린다.
         for (int i = 0; i < 6; i++) {
-            Rectangle(20 + i * 60, 60, 20 + (i + 1) * 60, 120, RGB(0, 100, 200), RGB(0, 0, 128));
+            Rectangle(20 + i * 60, 60, 20 + (i + 1) * 60, 120, border_color[p_data[i]], fill_color[p_data[i]]);
         }
-        // 사용자가 선택한 위치에 해당하는 사각형만 밝은 색 사각형으로 다시 그립니다.
-        Rectangle(20 + x * 60, 60, 20 + (x + 1) * 60, 120, RGB(0, 200, 255), RGB(0, 0, 255));
+        /*
+        // 조건문을 사용해서 사각형의 색상을 다르게 표현하는 예시
+        for (int i = 0; i < 6; i++) {
+            if(p_data[i]) Rectangle(20 + i * 60, 60, 20 + (i + 1) * 60, 120, RGB(0, 200, 255), RGB(0, 0, 255));
+            else Rectangle(20 + i * 60, 60, 20 + (i + 1) * 60, 120, RGB(0, 100, 200), RGB(0, 0, 128));
+        }
+        */
         ShowDisplay(); // 정보를 윈도우에 출력한다.
     }
 }
@@ -29,6 +44,9 @@ MOUSE_MESSAGE(OnLButtonDown, NULL, NULL)
 
 int main()
 {
+    char state[6] = { 0, };
+    SetAppData(state, sizeof(state));  // 지정한 변수를 내부 데이터로 저장한다.
+
     // (10, 10) 좌표에 파란색으로 안내 메시지를 출력한다!
     TextOut(10, 10, RGB(0, 0, 255), "사각형을 클릭하면 색상이 변경됩니다~!");
 
